@@ -67,14 +67,13 @@ async function run() {
     }
     // users related apis
     // get all users
-    app.get('/users', async (req, res) => {
+    app.get('/users',verifyJWT, verifyAdmin, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     })
     // insert users information's
     app.post('/users', async (req, res) => {
       const user = req.body;
-      console.log(user);
       const query = { email: user.email }
       const existingUser = await usersCollection.findOne(query);
       if (existingUser) {
@@ -83,7 +82,7 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result)
     })
-   app.get('/users/admin/:email', verifyJWT, verifyJWT, async(req, res) => {
+   app.get('/users/admin/:email', verifyJWT, async(req, res) => {
     const email = req.params.email;
     if(req.decoded.email !== email) {
       res.send({admin: false})
@@ -135,11 +134,9 @@ async function run() {
      if(email !== decodedEmail) {
       return res.send(401).send({error: true, message: 'forbidden access'})
      }
-      else {
         const query = { email: email };
         const result = await cartCollection.find(query).toArray();
         res.send(result);
-      }
     });
 
     app.post('/carts', async (req, res) => {
